@@ -1,0 +1,19 @@
+{
+  "name": "update-service",
+  "version": "1.0.0",
+  "description": "Pull data from 3rd party API's",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LBU-TeamHSBC/update-service.git"
+  },
+  "author": "TeamHSBC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LBU-TeamHSBC/update-service/issues"
+  },
+  "homepage": "https://github.com/LBU-TeamHSBC/update-service#readme"
+}
