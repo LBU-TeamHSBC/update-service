@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/LBU-TeamHSBC/update-service/issues"
   },
-  "homepage": "https://github.com/LBU-TeamHSBC/update-service#readme"
+  "homepage": "https://github.com/LBU-TeamHSBC/update-service#readme",
+  "dependencies": {
+    "request": "^2.83.0"
+  }
 }
