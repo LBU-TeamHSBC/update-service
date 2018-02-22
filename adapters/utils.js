@@ -1,6 +1,7 @@
 const request = require('request');
 
 const getData = (url, auth_token) => {
+    console.log(url);
     return new Promise((resolve, reject) => {
         request.get({
                 uri: url,

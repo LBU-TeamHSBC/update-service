@@ -16,7 +16,7 @@ const run = _ => {
     var looper;
     try {
         updateUserData();
-        looper = setTimeout(run, SLEEP_SECONDS * 1000);
+        looper = setTimeout(run, SLEEP_SECONDS * 10000);
     } catch (err) {
         console.log(`Error: ${err}`);
         clearTimeout(looper);
@@ -24,9 +24,20 @@ const run = _ => {
 };
 
 const updateUserData = _ => {
-    getDataForUser(342, 29847295723, 'IABT8ATYLBYCLYRCA8BRLWGALWIYLW8YRWYL8CRUAWB8Y==')
-        .then(data => console.log(data))
-        .catch(err => console.error("Error: " + err));
+    // TODO - Query DB for users with linked accounts
+    // TODO - Get last updated for each service
+    // TODO - Update as required
+    
+    // Testing...
+    const user_list = [
+        'userA', 'userB', 'userC', 'userD', 'userE', 'userF',
+        'userG', 'userH', 'userI', 'userJ', 'userK', 'userL'
+    ];
+    user_list.forEach(user => {
+        getDataForUser(342, user, 'IABT8ATYLBYCLYRCA8BRLWGALWIYLW8YRWYL8CRUAWB8Y==')
+            .then(data => console.log(data))
+            .catch(err => console.error("Error: " + err));
+    });
 }
 
 run()
