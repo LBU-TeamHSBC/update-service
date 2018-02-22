@@ -35,7 +35,7 @@ const updateUserData = _ => {
     ];
     user_list.forEach(user => {
         getDataForUser(342, user, 'IABT8ATYLBYCLYRCA8BRLWGALWIYLW8YRWYL8CRUAWB8Y==')
-            .then(data => console.log(data))
+            .then(data => console.log(user + JSON.stringify(data)))
             .catch(err => console.error("Error: " + err));
     });
 }

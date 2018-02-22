@@ -2,48 +2,43 @@ const getData = require('./utils').getData;
 
 const BASE_URL = 'http://127.0.0.1:3000/git';
 
-module.exports = (user_id, auth_token) => {
+const processRepos = (user_id, auth_token, repos) => {
     let data = [];
-    return getData(`${BASE_URL}/users/${user_id}`, auth_token)
-        .then(user => {
-            data = {
-                login: user.login,
-                followers: user.followers,
-                repos: user.public_repos,
-                gists: user.public_gists
-            };
-            return user.login;
-        })
-        .then(_ => getReposForUser(user_id, auth_token))
-        .then(repos => getLanguageTags(user_id, repos, auth_token))
-        .then(langs => {
-            data['languages'] = langs;
-            return data;
+    let done = 0;
+    return new Promise((resolve, reject) => {
+        repos.forEach(repo => {
+            const repo_stats = {};
+            getLanguageTags(user_id, repo, auth_token)
+            .then(langs => {
+                Object.assign(repo_stats, {
+                    id: repo.id,
+                    name: repo.name,
+                    rating: repo.stars,
+                    created: repo.created_at,
+                    updated: repo.updated_at,
+                    lines_of_code: 0
+                });
+                repo_stats['tags'] = langs;
+                Object.keys(langs).forEach(lang => {
+                    repo_stats['lines_of_code'] += langs[lang];
+                });
+            })
+            .then(_ => {
+                data.push(repo_stats);
+                if (++done == repos.length) {
+                    resolve(data);
+                }
+            });
         });
+    });
 };
 
 const getReposForUser = (user_id, auth_token) => {
     return getData(`${BASE_URL}/repos/${user_id}`, auth_token);
 };
 
-const getLanguageTags = (user_id, repos, auth_token) => {
-    var repo_results = [];
-
-    for (repo of repos) {
-        const a = getData(`${BASE_URL}/repos/${user_id}/${repo.name}/languages`, auth_token);
-        repo_results.push(a);
-    }
-
-    return Promise.all(repo_results)
-        .then(results => {
-            const sum_tags = {};
-            results.forEach(tags => {
-                Object.keys(tags).forEach(tag => {
-                    sum_tags[tag] = getOrDefault(sum_tags, tag, 0) + tags[tag];
-                });
-            });
-            return sum_tags;
-        });
+const getLanguageTags = (user_id, repo, auth_token) => {
+    return getData(`${BASE_URL}/repos/${user_id}/${repo.name}/languages`, auth_token);
 };
 
 const getOrDefault = (ob, key, def) => {
@@ -51,4 +46,10 @@ const getOrDefault = (ob, key, def) => {
         return ob[key];
     }
     return def;
-}
+};
+
+module.exports = (user_id, auth_token) => {
+    return getData(`${BASE_URL}/users/${user_id}`, auth_token)
+    .then(_ => getReposForUser(user_id, auth_token))
+    .then(repos => processRepos(user_id, auth_token, repos));
+};
