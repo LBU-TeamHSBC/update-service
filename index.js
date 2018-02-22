@@ -1,6 +1,8 @@
-const github = require('./adapters/github');
+const config = require('./config');
+const db = require('mysql');
 
-const SLEEP_SECONDS = 1;
+// Adapters
+const github = require('./adapters/github');
 
 // Mapping needs to be stored in DB
 const provider_map = {
@@ -16,7 +18,7 @@ const run = _ => {
     var looper;
     try {
         updateUserData();
-        looper = setTimeout(run, SLEEP_SECONDS * 10000);
+        looper = setTimeout(run, config.SLEEP_SECONDS * 1000);
     } catch (err) {
         console.log(`Error: ${err}`);
         clearTimeout(looper);
@@ -24,9 +26,22 @@ const run = _ => {
 };
 
 const updateUserData = _ => {
+    const conn = db.createConnection(config.db);
+    conn.connect(err => {
+        if (err) {
+            console.log(err);
+            return;
+        }
+    });
     // TODO - Query DB for users with linked accounts
     // TODO - Get last updated for each service
     // TODO - Update as required
+
+    conn.query("SELECT * FROM user", (err, results, fields) => {
+        results.forEach(user => {
+            console.log(user.id + " " + user.username + " " + user.email);
+        });
+    });
     
     // Testing...
     const user_list = [

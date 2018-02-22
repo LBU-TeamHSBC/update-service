@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/LBU-TeamHSBC/update-service#readme",
   "dependencies": {
+    "mysql": "^2.15.0",
     "request": "^2.83.0"
   }
 }
