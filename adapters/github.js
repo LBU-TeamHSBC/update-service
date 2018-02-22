@@ -1,6 +1,11 @@
 const getData = require('./utils').getData;
+const getOrDefault = require('./utils').getOrDefault;
 
 const BASE_URL = 'http://127.0.0.1:3000/git';
+
+const getReposForUser = (user_id, auth_token) => {
+    return getData(`${BASE_URL}/repos/${user_id}`, auth_token);
+};
 
 const processRepos = (user_id, auth_token, repos) => {
     let data = [];
@@ -33,19 +38,8 @@ const processRepos = (user_id, auth_token, repos) => {
     });
 };
 
-const getReposForUser = (user_id, auth_token) => {
-    return getData(`${BASE_URL}/repos/${user_id}`, auth_token);
-};
-
 const getLanguageTags = (user_id, repo, auth_token) => {
     return getData(`${BASE_URL}/repos/${user_id}/${repo.name}/languages`, auth_token);
-};
-
-const getOrDefault = (ob, key, def) => {
-    if (ob.hasOwnProperty(key)) {
-        return ob[key];
-    }
-    return def;
 };
 
 module.exports = (user_id, auth_token) => {

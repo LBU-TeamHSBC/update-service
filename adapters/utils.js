@@ -13,4 +13,11 @@ const getData = (url, auth_token) => {
     });
 };
 
-module.exports = { getData };
+const getOrDefault = (ob, key, def) => {
+    if (ob.hasOwnProperty(key)) {
+        return ob[key];
+    }
+    return def;
+};
+
+module.exports = { getData, getOrDefault };
