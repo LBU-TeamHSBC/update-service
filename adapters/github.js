@@ -19,13 +19,14 @@ const processRepos = (user_id, auth_token, repos) => {
                     id: repo.id,
                     name: repo.name,
                     rating: repo.stars,
-                    created: repo.created_at,
-                    updated: repo.updated_at,
+                    created: repo.created_at.split('T')[0],
+                    updated: repo.updated_at.split('T')[0],
                     lines_of_code: 0
                 });
-                repo_stats['tags'] = langs;
+                repo_stats['tags'] = {};
+                repo_stats['lines_of_code'] = Object.keys(langs).reduce((a,b)=>a+=langs[b],0)
                 Object.keys(langs).forEach(lang => {
-                    repo_stats['lines_of_code'] += langs[lang];
+                    repo_stats['tags'][lang] = parseInt(langs[lang] / repo_stats['lines_of_code'] * 100);
                 });
             })
             .then(_ => {
