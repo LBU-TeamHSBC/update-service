@@ -40,10 +40,6 @@ const updateUserData = _ => {
         }
     });
 
-    // const linked_accounts_sql = "\
-    //     SELECT sv.student_id, sv.oauth_token, v.id AS vendor_id, v.category \
-    //         FROM student_vendor AS sv \
-    //         INNER JOIN vendor v ON v.id=sv.vendor_id";
     const linked_accounts_sql = "\
     SELECT u.username, sv.student_id, sv.oauth_token, v.id AS vendor_id, v.category \
         FROM student_vendor AS sv \
@@ -71,7 +67,6 @@ const updateUserData = _ => {
                                         '${project.created}', '${project.updated}'
                                     )`;
                                 console.log("PROJECT>>>> " + JSON.stringify(project));
-                    
                                 // Insert project into DB
                                 conn.query(sql, (err, projResult, fields) => {
                                     if (err) {
@@ -79,7 +74,6 @@ const updateUserData = _ => {
                                         console.log(err.sqlMessage);
                                         return;
                                     }
-
                                     // Insert tags for project into DB
                                     insertTags(projResult.insertId, project.tags, pnext);
                                 });
@@ -89,15 +83,14 @@ const updateUserData = _ => {
                         } else if (link.category === 'COURSE') {
                             console.log("COURSE" + link.student_id + ": " + JSON.stringify(data) + "\n");
                         }
-                }) //processData(link.vendor_id, link.student_id, link.category, data))
-            .catch(err => console.error("Error: " + err));
+                })
+                .catch(err => console.error("Error: " + err));
         });
     });
 }
 
 const insertTags = (project_id, tags, pnext) => {
     async.eachSeries(Object.keys(tags), (tag, next) => {
-        console.log("Checking: " + tag);
         const weighting = tags[tag];
         conn.query(`SELECT id FROM tag WHERE name='${tag}'`, (err, results, fields) => {
             if (err) {
@@ -105,28 +98,25 @@ const insertTags = (project_id, tags, pnext) => {
             }
             // If tag not in DB add it
             if (results.length === 0) {
-                console.log("Add tag: " + tag);
                 conn.query(`INSERT INTO tag (name) VALUES ('${tag}')`, (err, tag_result, fields) => {
                     if (err) {
-                        console.log("add tag: ", err.sqlMessage);
+                        console.log("Error adding tag: ", err.sqlMessage);
                         return;
                     }
                     const tag_id = tag_result.insertId;
-                    insertTag(project_id, tag_id, weighting);
-                })
+                    insertTag(project_id, tag_id, weighting, next);
+                });
             } else {
-                console.log("Tag exists: " + tag);
                 const tag_id = results[0].id;
-                insertTag(project_id, tag_id, weighting);
+                insertTag(project_id, tag_id, weighting, next);
             }
-        })
-        next();
+        });
     }, _ => {
         pnext();
     });
 };
 
-const insertTag = (project_id, tag_id, weighting) => {
+const insertTag = (project_id, tag_id, weighting, next) => {
     const tag_sql = `INSERT INTO student_project_tag (
         student_project_id,
         tag_id,
@@ -143,8 +133,8 @@ const insertTag = (project_id, tag_id, weighting) => {
         } else {
             console.log("Added: ", project_id, tag_id, weighting);
         }
+        next();
     });
 };
-
 
 run()
