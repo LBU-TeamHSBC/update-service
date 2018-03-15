@@ -1,4 +1,5 @@
 const config = require('./config');
+const async = require('async');
 const db = require('mysql');
 
 // Adapters
@@ -52,14 +53,15 @@ const updateUserData = _ => {
     
     // Query DB for users with linked accounts
     conn.query(linked_accounts_sql, (err, results, fields) => {
-        results.forEach(link => {
+        async.eachSeries(results, (link,next) => {
+        // results.forEach(link => {
             console.log("LINK::", link);
             getDataForUser(link.vendor_id, link.student_id, link.oauth_token)
                 .then(data => {
                         // STORE DATA IN DB
                         console.log("StudentId: " + link.student_id);
                         if (link.category === 'PROJECT') {
-                            for (let project of data) {
+                            async.eachSeries(data, (project,pnext) => {
                                 var sql = `INSERT INTO student_project (
                                         student_id, vendor_id, project_id, name,
                                         rating, lines_of_code, created_at, updated_at
@@ -79,9 +81,11 @@ const updateUserData = _ => {
                                     }
 
                                     // Insert tags for project into DB
-                                    insertTags(projResult.insertId, project.tags);
+                                    insertTags(projResult.insertId, project.tags, pnext);
                                 });
-                            }
+                            }, _ => {
+                                next();
+                            });
                         } else if (link.category === 'COURSE') {
                             console.log("COURSE" + link.student_id + ": " + JSON.stringify(data) + "\n");
                         }
@@ -91,8 +95,8 @@ const updateUserData = _ => {
     });
 }
 
-const insertTags = (project_id, tags) => {
-    for (let tag in tags) {
+const insertTags = (project_id, tags, pnext) => {
+    async.eachSeries(Object.keys(tags), (tag, next) => {
         console.log("Checking: " + tag);
         const weighting = tags[tag];
         conn.query(`SELECT id FROM tag WHERE name='${tag}'`, (err, results, fields) => {
@@ -116,7 +120,10 @@ const insertTags = (project_id, tags) => {
                 insertTag(project_id, tag_id, weighting);
             }
         })
-    }
+        next();
+    }, _ => {
+        pnext();
+    });
 };
 
 const insertTag = (project_id, tag_id, weighting) => {
